@@ -1,8 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-
-interface HttpError extends Error{
-    status?: number;
-}
+import { HttpError } from "../services/utils/HttpError.ts";
 
 const errorHandler = (err: HttpError, req: Request, res: Response, next: NextFunction)=>{
     console.error(err);
