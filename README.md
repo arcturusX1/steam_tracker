@@ -45,9 +45,9 @@ STEAM_API_KEY=your_steam_api_key
 STEAM_API_URL=https://api.steampowered.com
 MONGODB_USERNAME=your_mongodb_username
 MONGODB_PASSWORD=your_mongodb_password
-MONGODB_URI=mongodb+srv://your_mongodb_username:your_mongodb_password@your-cluster.mongodb.net/steam_tracker
-PORT=3001
-CLIENT_URL=http://localhost:5173
+MONGODB_URI=
+PORT=
+CLIENT_URL=
 ```
 
 Keep `.env` private and do not commit credentials or API keys. URL-encode special characters in the MongoDB username or password when placing them in `MONGODB_URI`.
