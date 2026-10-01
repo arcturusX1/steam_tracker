@@ -4,12 +4,10 @@ import {
     getPlayerSummary,
     getOwnedGames
 } from "../services/steamService.ts"
-import type { PlayerSummary, OwnedGame } from "../services/types/steamResponseTypes.ts";
+import {toProfile, toGame, toHours} from "../services/utils/mappers.ts"
 import { HttpError } from "../services/utils/HttpError.ts";
 
 const MAX_INPUT_LENGTH = 200;
-const ICON_BASE_URL = "https://media.steampowered.com/steamcommunity/public/images/apps";
-const userStatus = ["offline", "online", "busy", "away", "snooze", "looking to trade", "looking to play"];
 
 interface URLParams{
     input: string
@@ -23,39 +21,6 @@ function paramsValidator(raw: string):string{
 
     }
     return input
-}
-
-//time conversion helpers
-function toIsoDate(seconds?: number): string | null{
-    return seconds? new Date(seconds * 1000).toISOString() : null
-}
-
-function toHours(minutes: number): number{
-    return Math.round((minutes/60)*10)/10;
-}
-
-//returns fetched data from service
-function toProfile(player: PlayerSummary) {
-  return {
-    steamId: player.steamid,
-    name: player.personaname,
-    avatar: player.avatarfull,
-    profileUrl: player.profileurl,
-    status: userStatus[player.personastate] ?? "unknown",
-    isPublic: player.communityvisibilitystate === 3,
-    createdAt: toIsoDate(player.timecreated),
-  };
-}
-
-function toGame(game: OwnedGame) {
-  return {
-    appId: game.appid,
-    name: game.name,
-    playtimeHours: toHours(game.playtime_forever),
-    recentHours: toHours(game.playtime_2weeks ?? 0),
-    iconUrl: game.img_icon_url ? `${ICON_BASE_URL}/${game.appid}/${game.img_icon_url}.jpg` : null,
-    lastPlayed: toIsoDate(game.rtime_last_played),
-  };
 }
 
 export async function getUser(req: Request<URLParams>, res: Response){
