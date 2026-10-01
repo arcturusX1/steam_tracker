@@ -21,7 +21,7 @@ export interface PlayerSummariesResponse {
   response: {
     players: PlayerSummary[];
   };
-}
+}//
 
 export interface OwnedGame {
   appid: number;

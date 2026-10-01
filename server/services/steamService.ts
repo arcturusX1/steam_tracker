@@ -64,7 +64,7 @@ export async function resolveSteamId(input: string): Promise<string> {
 export async function getPlayerSummary(steamId: string): Promise<PlayerSummary> {
     const data = await steamGet<PlayerSummariesResponse>("/ISteamUser/GetPlayerSummaries/v2/", {
         steamids: steamId,}); //can accept multiple keys so steamids. 
-        //no formatting to json?
+        //no formatting to json? solved: steamGet formats to json by design
 
     const player = data.response.players[0]
     if (!player){
