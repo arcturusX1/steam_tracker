@@ -13,7 +13,7 @@ export interface IUser{
 const profileSchema = new Schema<UserProfile>(
   {
     steamId: { type: String, required: true },
-    name: { type: String, required: true },
+    displayName: { type: String, required: true },
     avatar: { type: String, required: true },
     profileUrl: { type: String, required: true },
     status: { type: String, required: true },

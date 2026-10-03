@@ -13,7 +13,7 @@ export function toHours(minutes: number): number{
 }
 export interface UserProfile{
   steamId: string;
-  name: string;
+  displayName: string;
   avatar: string;
   profileUrl: string;
   status: string;
@@ -29,11 +29,12 @@ export interface UserGame{
     iconUrl: string | null;
     lastPlayed: string | null;
 }
+
 //maps fetched data from service, cached
 export function toProfile(player: PlayerSummary):UserProfile {
   return {
     steamId: player.steamid,
-    name: player.personaname,
+    displayName: player.personaname,
     avatar: player.avatarfull,
     profileUrl: player.profileurl,
     status: userStatus[player.personastate] ?? "unknown",

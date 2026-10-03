@@ -9,13 +9,16 @@ import type {
   OwnedGamesResponse,
 } from "./types/steamResponseTypes.ts";
 
+
 const steamConnector = axios.create({
     baseURL: process.env.STEAM_API_URL,
     timeout: 10000
 });
 
 //<T> == Generic T, type changes depending on caller 
-//Record is a datatype, takes type as a key, return the value. gets unpacked in the response by ... spread operator
+// Record<string, string | number> describes an object with string keys
+// and string-or-number values. The spread operator copies those entries
+// into the request params object.
 
 async function steamGet<T>(path: string, params: Record<string, string | number> = {}): Promise<T> { 
     try{
@@ -36,29 +39,38 @@ async function steamGet<T>(path: string, params: Record<string, string | number>
 
 }
 
-const STEAM_ID64 = /^\d{17}$/; //regex to resolve steam id
+const STEAM_ID64 = /^\d{17}$/; //a steamId is exactly 17 digits
 
-// Finding steam ID ->/ISteamUser/ResolveVanityURL/v1/
-export async function resolveSteamId(input: string): Promise<string> {
+//either the input already is a steamId, or it's a vanity name to look up
+export type ParsedSteamInput = { steamId: string } | { vanityName: string };
+
+//works out what the user typed (steamId, vanity name, or profile URL) without calling steam
+export function parseIdOrVanity(input: string): ParsedSteamInput {
   const trimmed = input.trim();
 
-  //gets profile through steam id, 
+  //profile URL: steamcommunity.com/profiles/<steamId>
   const profileMatch = trimmed.match(/steamcommunity\.com\/profiles\/(\d{17})/);
-  if (profileMatch) return profileMatch[1];
+  if (profileMatch) return { steamId: profileMatch[1] };
 
-  //gets profile through steam vanity url
+  //custom URL: steamcommunity.com/id/<vanityName>
   const vanityMatch = trimmed.match(/steamcommunity\.com\/id\/([^/]+)/);
-  const name = vanityMatch ? vanityMatch[1] : trimmed;
+  const value = vanityMatch ? vanityMatch[1] : trimmed;
 
-  if (STEAM_ID64.test(name)) return name;
+  if (STEAM_ID64.test(value)) return { steamId: value };
+  return { vanityName: value };
+}
 
-  const data = await steamGet<VanityResponse>("/ISteamUser/ResolveVanityURL/v1/", { vanityurl: name }); // this endpoint wasn't in valve's api guide
+//vanity name -> steamId ->/ISteamUser/ResolveVanityURL/v1/
+export async function lookupVanityName(vanityName: string): Promise<string> {
+  const data = await steamGet<VanityResponse>("/ISteamUser/ResolveVanityURL/v1/", { vanityurl: vanityName }); // this endpoint wasn't in valve's api guide
 
   if (data.response.success !== 1 || !data.response.steamid) {
-    throw new HttpError(404, `No Steam user found for "${name}"`);
+    throw new HttpError(404, `No Steam user found for "${vanityName}"`);
   }
   return data.response.steamid;
 }
+
+
 
 //player summary feature -> ISteamUser/GetPlayerSummaries/v2
 export async function getPlayerSummary(steamId: string): Promise<PlayerSummary> {
@@ -75,7 +87,7 @@ export async function getPlayerSummary(steamId: string): Promise<PlayerSummary> 
 
 //get owned games -> /IPlayerService/GetOwnedGames/v1/
 export async function getOwnedGames(steamId: string): Promise<OwnedGame[] | null>{
-    const data = await steamGet<OwnedGamesResponse>("IPlayerService/GetOwnedGames/v1/", {
+    const data = await steamGet<OwnedGamesResponse>("/IPlayerService/GetOwnedGames/v1/", {
         steamid: steamId,
         include_appinfo: 1, //includes game info and logos. default returns only appid
         include_played_free_games: 1,

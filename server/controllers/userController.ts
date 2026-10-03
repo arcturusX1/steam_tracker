@@ -1,9 +1,6 @@
 import type { Request, Response } from "express";
-import {
-    resolveSteamId,
-    getPlayerSummary,
-    getOwnedGames
-} from "../services/steamService.ts"
+import { getPlayerSummary, getOwnedGames } from "../services/steamService.ts"
+import { resolveSteamIdCached } from "../services/userService.ts"
 import {toProfile, toGame, toHours} from "../services/utils/mappers.ts"
 import { HttpError } from "../services/utils/HttpError.ts";
 
@@ -24,17 +21,17 @@ function paramsValidator(raw: string):string{
 }
 
 export async function getUser(req: Request<URLParams>, res: Response){
-    const validParams = paramsValidator(req.params.input)
-    
-    const steamId = await resolveSteamId(validParams);
-    const user = await getPlayerSummary(steamId);
+    const input = paramsValidator(req.params.input)
 
-    res.json(toProfile(user));
+    const steamId = await resolveSteamIdCached(input);
+    const player = await getPlayerSummary(steamId);
+
+    res.json(toProfile(player));
 }
 
 export async function getUserGames(req: Request<URLParams>, res: Response){
-    const validParams = paramsValidator(req.params.input);
-    const steamId = await resolveSteamId(validParams);
+    const input = paramsValidator(req.params.input);
+    const steamId = await resolveSteamIdCached(input);
     const ownedGames = await getOwnedGames(steamId);
 
     if(!ownedGames){

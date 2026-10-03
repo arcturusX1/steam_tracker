@@ -1,13 +1,14 @@
 import { Schema, model } from "mongoose";
 
+//one document = one mapping: vanity name -> steamId
 export interface IVanity{
-    name: string;
+    vanityName: string;
     steamId: string;
     createdAt: Date;
 }
 
 const vanitySchema = new Schema<IVanity>({
-    name: {type:String, required: true, lowercase: true, unique: true},
+    vanityName: {type:String, required: true, lowercase: true, unique: true},
     steamId: {type: String, required: true},
     createdAt: {type: Date, default: Date.now, expires:"7d"}
 })
