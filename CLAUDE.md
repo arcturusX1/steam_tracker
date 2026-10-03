@@ -55,7 +55,7 @@ server/
 ├── controllers/userController.ts  # paramsValidator (400), getUser, getUserGames (403 if private)
 ├── services/
 │   ├── steamService.ts         # all Steam HTTP calls; steamGet<T> is private
-│   ├── userService.ts          # cache layer (Step 6, in progress)
+│   ├── userService.ts          # cache layer: resolveSteamIdCached, getProfileCached, getOwnedGamesCached
 │   ├── types/steamResponseTypes.ts  # raw Steam response shapes
 │   └── utils/
 │       ├── HttpError.ts        # Error subclass with `status`
@@ -133,29 +133,32 @@ server/
 | 3. Steam service layer | Done |
 | 4. Routes and controllers | Done |
 | 5. Rate limiting | Done |
-| 6. Caching in MongoDB | **In progress.** Guide: `server/docs/step-6-caching-models.md` |
+| 6. Caching in MongoDB | Done (tested 2026-10-03). Guide: `server/docs/step-6-caching-models.md` |
 | 7. React client | Not started |
 | Later | Steam OpenID login (passport-steam), deployment (`trust proxy` for rate limiting behind a host's proxy) |
 
-### Step 6 status
+### How the cache works (Step 6)
 
-- **Done:**
-  - Mappers moved to `services/utils/mappers.ts`, with exported interfaces and return types.
-  - `User` and `VanityName` models.
-  - `resolveSteamId` split into `parseIdOrVanity` and `lookupVanityName`.
-  - `resolveSteamIdCached` implemented in `userService`, and the controllers use it.
-- **To do:**
-  - `userService.ts`: `isFresh`, `getProfileCached`, `getGamesCached`. Write with `updateOne` + `$set` + `upsert`, and read with `.lean()`.
-  - Point the controllers' profile and games calls at `userService`. They still call `getPlayerSummary` and `getOwnedGames` directly.
-  - The total-playtime decision: sum the rounded hours, or add `playtimeMinutes` to `UserGame`, the mapper, and the schema.
-  - The Part F tests.
-  - **`MONGODB_URI` has no database name.** Everything goes into the `test` database (it was empty as of 2026-10-03). Add `/steam_tracker` before the `?`.
+- **Controllers only call `userService`:** `resolveSteamIdCached`, `getProfileCached`, and `getOwnedGamesCached`. Controllers never call `steamService` directly.
+- **Max ages:** `PROFILE_MAX_AGE` is 10 min and `GAMES_MAX_AGE` is 1 h, both in ms. `isFresh` treats a missing or null timestamp as stale.
+- **Writes** use `User.updateOne({ steamId }, { $set: {...} }, { upsert: true })`. `$set` keeps profile and games independent; tested that a profile refresh leaves the games fields alone.
+- **Private game details** are cached as `games: null` with a fresh `gamesFetchedAt`. Errors (404, 502) are never cached.
+- **Games are sorted** most-played first **before saving**; the controller doesn't sort.
+- **Total playtime:** the controller sums `playtimeHours` and rounds to whole hours. There's no `playtimeMinutes` field.
+- **Database:** `steam_tracker`, set in `MONGODB_URI`. Test data: vanity entries for gabelogannewell, robinwalker, and arcturusx1, plus their `users` docs.
+- **Test profiles:**
+  - The owner's: `ArcturusX1` / `76561198290622030`, public, 202 games.
+  - `gabelogannewell` and `robinwalker`: public profiles with **private** games, useful for 403 tests.
 
 ## Known gotchas
 
 - **Atlas IP access list:** the owner's ISP rotates public IPs (seen: `45.248.151.16`, `.29`). The access list uses `45.248.151.0/24`.
   - An Atlas rejection shows up as `MongooseServerSelectionError` / `SSL alert number 80`, not as an auth error.
   - `hostname -i` in WSL gives a local address, not the public IP.
+- **Large reads from Atlas are slow from the dev machine.** A 51 KB user document (202 games) takes 1.8–6.5 s to transfer, while the query itself takes 0 ms, a round trip 90 ms, and a small document about 100 ms.
+  - It isn't Mongoose: the raw driver behaves the same way. zlib compression only helps slightly.
+  - The likely cause is the network route to the cluster's region, or free-tier throttling. Check the cluster's region before optimizing; it should mostly go away when the server is deployed in the same region as Atlas.
+  - Cached reads still use 0 Steam calls.
 - **TTL index:** MongoDB won't update an existing TTL index when `expires` changes in code. Drop the index in Atlas and restart.
 - **Unknown options are ignored:** Mongoose silently ignores misspelled schema options (for example, `requried`), and TypeScript doesn't catch them either.
 - **Full profile URLs** as `:input` must be URL-encoded by the client (`encodeURIComponent`).

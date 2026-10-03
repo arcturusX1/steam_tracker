@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import { getPlayerSummary, getOwnedGames } from "../services/steamService.ts"
-import { resolveSteamIdCached } from "../services/userService.ts"
-import {toProfile, toGame, toHours} from "../services/utils/mappers.ts"
+import { resolveSteamIdCached, getProfileCached, getOwnedGamesCached } from "../services/userService.ts"
+import {toHours} from "../services/utils/mappers.ts"
 import { HttpError } from "../services/utils/HttpError.ts";
+
 
 const MAX_INPUT_LENGTH = 200;
 
@@ -24,29 +24,26 @@ export async function getUser(req: Request<URLParams>, res: Response){
     const input = paramsValidator(req.params.input)
 
     const steamId = await resolveSteamIdCached(input);
-    const player = await getPlayerSummary(steamId);
+    const profile = await getProfileCached(steamId);
 
-    res.json(toProfile(player));
+    res.json(profile);
 }
 
 export async function getUserGames(req: Request<URLParams>, res: Response){
     const input = paramsValidator(req.params.input);
     const steamId = await resolveSteamIdCached(input);
-    const ownedGames = await getOwnedGames(steamId);
+    const games = await getOwnedGamesCached(steamId);
 
-    if(!ownedGames){
+    if(!games){
         throw  new HttpError(403, `User profile is private`)
     }
 
-    const totalPlaytimeMins = ownedGames.reduce((sum, game) => sum + game.playtime_forever ,0);
-
-    const games = ownedGames.map(toGame);
-    games.sort((a,b)=> b.playtimeHours - a.playtimeHours)
+    const totalPlaytimeHours = games.reduce((sum, game) => sum + game.playtimeHours ,0);
 
     res.json({
         steamId,
         gameCount: games.length,
-        totalPlaytimeHours: toHours(totalPlaytimeMins),
+        totalPlaytimeHours: Math.round(totalPlaytimeHours),
         games
     })
 
