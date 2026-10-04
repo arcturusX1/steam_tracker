@@ -67,7 +67,7 @@ server/
 │   ├── notFound.ts             # JSON 404 using req.originalUrl
 │   ├── errorHandler.ts         # 4-arg handler; hides messages on 500; headersSent → next(err)
 │   └── rateLimiter.ts          # apiLimiter (300/15min), steamLimiter (20/min); draft-8 headers; JSON message
-└── docs/                       # step guides written for the owner (step-4, step-6)
+└── docs/                       # guides written for the owner: step-4, step-6, ts-js-study-guide (their weak spots, ranked)
 ```
 
 ### Middleware and route order in `index.ts` (order matters)
