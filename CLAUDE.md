@@ -1,6 +1,6 @@
 # Steam Tracker
 
-A MERN app that looks up Steam users and tracks their profile and game library. It has an Express + TypeScript API in `server/` and a React 19 + Vite client in `client/`. The client is still the untouched Vite template; all work so far has been on the server.
+A MERN app that looks up Steam users and tracks their profile and game library. It has an Express + TypeScript API in `server/` and a React 19 + Vite client in `client/`. The server is feature-complete for profiles and game libraries; the client is being built (Step 7).
 
 ## How to work in this repo (learning project)
 
@@ -42,6 +42,18 @@ The owner is learning by building this, and writes the code themselves.
 | `CLIENT_URL` | `http://localhost:5173`, used as the CORS origin. No trailing slash. |
 
 `MONGODB_USERNAME` and `MONGODB_PASSWORD` are still in `.env.example`, but no code reads them.
+
+## Client (`client/`)
+
+- **Stack:** Vite 8, React 19, TypeScript 6, Tailwind v4 (via `@tailwindcss/vite`, no config file), and shadcn/ui.
+- **shadcn settings:** the `radix-vega` style, zinc base colour, Phosphor icons, and Noto Sans / Oxanium fonts. Components live in `src/components/ui/`; add them with `npx shadcn@latest add <name>` and don't hand-edit them.
+- **`cn`** comes from the `cn` npm package (newer shadcn), re-exported by `src/lib/utils.ts`.
+- **Dark mode is permanent:** `class="dark"` is set on `<html>`. Use theme tokens (`bg-background`, `text-muted-foreground`), not raw colours.
+- **`@/` alias** to `src/`, configured in three places: `vite.config.ts` (`resolve.alias`, using `import.meta.dirname`) and `paths` in both `tsconfig.json` and `tsconfig.app.json`. **No `baseUrl`**, because TS 6 deprecates it.
+- **ESLint:** `react-refresh/only-export-components` is turned off for `src/components/ui/**` only.
+- **Env:** `client/.env` (gitignored) sets `VITE_API_URL=http://localhost:5000/api`. **Every `VITE_` variable ships to the browser, so it must never hold a secret.**
+- **Checks (run from `client/`):** `npx tsc -b`, which is also the first half of `npm run build`, and `npm run lint`.
+- **Client tsconfig** has `noUnusedLocals` and `noUnusedParameters` turned on, unlike the server's, so unused imports fail the build.
 
 ## Server layout
 
@@ -134,7 +146,7 @@ server/
 | 4. Routes and controllers | Done |
 | 5. Rate limiting | Done |
 | 6. Caching in MongoDB | Done (tested 2026-10-03). Guide: `server/docs/step-6-caching-models.md` |
-| 7. React client | Not started |
+| 7. React client | In progress. 7.1 setup is done (commit `3273faa`). Next: 7.2 routing and search page, 7.3 library view, 7.4 store endpoint and game details view, then achievements. |
 | Later | Steam OpenID login (passport-steam), deployment (`trust proxy` for rate limiting behind a host's proxy) |
 
 ### How the cache works (Step 6)
