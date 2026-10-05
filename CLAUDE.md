@@ -8,6 +8,7 @@ The owner is learning by building this, and writes the code themselves.
 
 - **Don't edit source files unless asked.** Review their files, run the typecheck and curl, and point out problems with file and line references.
 - **Default to prose:** describe what each function or file needs to do (inputs, outputs, what it calls, edge cases, status codes) without code blocks. Write code **only when explicitly asked** ("give me the code", "write out the code"), and explain it line by line when you do.
+- **React components (since Step 7.3):** give the imports, the components and hooks to use, every prop and its value, handlers, and gotchas, but **no JSX or function bodies**. **Do give exact Tailwind `className` strings**, explaining each class.
 - "Describe a step" means numbered, concrete actions, not concepts.
 - When asked, step guides are saved to `server/docs/` as markdown.
 
@@ -79,7 +80,7 @@ server/
 │   ├── notFound.ts             # JSON 404 using req.originalUrl
 │   ├── errorHandler.ts         # 4-arg handler; hides messages on 500; headersSent → next(err)
 │   └── rateLimiter.ts          # apiLimiter (300/15min), steamLimiter (20/min); draft-8 headers; JSON message
-└── docs/                       # guides written for the owner: step-4, step-6, ts-js-study-guide (their weak spots, ranked)
+└── docs/                       # guides written for the owner: step-4, step-6, step-7.3a (client fetching), ts-js-study-guide (their weak spots, ranked)
 ```
 
 ### Middleware and route order in `index.ts` (order matters)
@@ -146,7 +147,7 @@ server/
 | 4. Routes and controllers | Done |
 | 5. Rate limiting | Done |
 | 6. Caching in MongoDB | Done (tested 2026-10-03). Guide: `server/docs/step-6-caching-models.md` |
-| 7. React client | In progress. 7.1 setup is done (commit `3273faa`). Next: 7.2 routing and search page, 7.3 library view, 7.4 store endpoint and game details view, then achievements. |
+| 7. React client | In progress. 7.1 setup and 7.2 routing and search page are done (`28e4fc0`). **7.3a (fetching) is in progress**: the remaining work is listed in `server/docs/step-7.3a-fetching.md`. Next: 7.3b library UI, 7.4 store endpoint and game details view, then achievements. |
 | Later | Steam OpenID login (passport-steam), deployment (`trust proxy` for rate limiting behind a host's proxy) |
 
 ### How the cache works (Step 6)
