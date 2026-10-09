@@ -41,5 +41,23 @@ export async function fetchUser(input: string, signal: AbortSignal): Promise<Use
 }
 
 export async function fetchUserGames(input: string, signal: AbortSignal): Promise<UserGameResponse>{
-    return await apiGet<UserGameResponse>("/users/games" + encodeURIComponent(input) , signal)
+    return await apiGet<UserGameResponse>("/users/" + encodeURIComponent(input) + "/games", signal)
+}
+
+export function errorMessage(error: ApiError){
+    switch (error.status){
+    case (0):
+    case (400):
+        return `${error.message}: ${error.status}`    
+    case (404):
+        return `${error.message}: ${error.status}`
+    case (403):
+        return `This profile's games are private: ${error.status}`
+    case (429):
+        return `Too many requests, try again later: ${error.status}`
+    case (502):
+        return `Steam is not available: ${error.status}`
+    default:
+        return `Something went wrong: ${error.status}`
+    }
 }
