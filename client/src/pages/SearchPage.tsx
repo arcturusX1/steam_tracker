@@ -19,7 +19,7 @@ import {
     InputGroupInput,
 } from "@/components/ui/input-group"
 
-const EXAMPLES = ["gabelogannewell", "ArcturusX1"]
+const EXAMPLES = ["76561197960287930", "ArcturusX1"]
 
 export default function SearchPage(){
     const [query, setQuery] = useState("")
@@ -66,13 +66,13 @@ export default function SearchPage(){
                                 </InputGroupAddon>
                             </InputGroup>
                             <FieldDescription>
-                                Custom URL, profile URL, SteamID or Display Names are not supported
+                                Enter a Custom URL name, SteamID, or profile URL
                             </FieldDescription>
                         </Field>
                     </form>
                 </CardContent>
 
-                <CardFooter className="felx flex-wrap gap-2">
+                <CardFooter className="flex flex-wrap gap-2">
                     <span className="text-sm text-muted-foreground">Try:</span>
                     {EXAMPLES.map((name)=>( //get names from EXAMPLES and turn each into a button
                         <Button

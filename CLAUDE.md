@@ -80,7 +80,7 @@ server/
 │   ├── notFound.ts             # JSON 404 using req.originalUrl
 │   ├── errorHandler.ts         # 4-arg handler; hides messages on 500; headersSent → next(err)
 │   └── rateLimiter.ts          # apiLimiter (300/15min), steamLimiter (20/min); draft-8 headers; JSON message
-└── docs/                       # guides written for the owner: step-4, step-6, step-7.3a (client fetching), ts-js-study-guide (their weak spots, ranked)
+└── docs/                       # guides written for the owner: step-4, step-6, step-7.3a (client fetching), step-7.3b (library UI), ts-js-study-guide (their weak spots, ranked)
 ```
 
 ### Middleware and route order in `index.ts` (order matters)
@@ -147,7 +147,7 @@ server/
 | 4. Routes and controllers | Done |
 | 5. Rate limiting | Done |
 | 6. Caching in MongoDB | Done (tested 2026-10-03). Guide: `server/docs/step-6-caching-models.md` |
-| 7. React client | In progress. 7.1 setup and 7.2 routing and search page are done (`28e4fc0`). **7.3a (fetching) is in progress**: the remaining work is listed in `server/docs/step-7.3a-fetching.md`. Next: 7.3b library UI, 7.4 store endpoint and game details view, then achievements. |
+| 7. React client | In progress. 7.1 setup and 7.2 routing and search page are done (`28e4fc0`). 7.3a fetching is done (`e66dd92`). **7.3b library UI is in progress** (Part 1, `ProfileHeader`); the guide is `server/docs/step-7.3b-library-ui.md`. Next: 7.4 store endpoint and game details view, then achievements. |
 | Later | Steam OpenID login (passport-steam), deployment (`trust proxy` for rate limiting behind a host's proxy) |
 
 ### How the cache works (Step 6)
@@ -165,7 +165,7 @@ server/
 
 ## Known gotchas
 
-- **Atlas IP access list:** the owner's ISP rotates public IPs (seen: `45.248.151.16`, `.29`). The access list uses `45.248.151.0/24`.
+- **Atlas IP access list:** the owner's ISP rotates public IPs across ranges (seen: `45.248.151.16`/`.29`, then `103.72.212.16`/`.29` on 2026-10-09). The access list has `45.248.151.0/24`, and needs `103.72.212.0/24` too. When the range changes again, the symptom is the same: `SSL alert number 80`.
   - An Atlas rejection shows up as `MongooseServerSelectionError` / `SSL alert number 80`, not as an auth error.
   - `hostname -i` in WSL gives a local address, not the public IP.
 - **Large reads from Atlas are slow from the dev machine.** A 51 KB user document (202 games) takes 1.8–6.5 s to transfer, while the query itself takes 0 ms, a round trip 90 ms, and a small document about 100 ms.
