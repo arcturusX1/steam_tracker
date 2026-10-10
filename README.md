@@ -28,7 +28,7 @@ A MERN app for looking up Steam users and exploring their profile and game libra
 - A user page that shows the display name, SteamID, game count, and total hours.
 - Error states for an unknown user, a private library, rate limiting, Steam being down, and the server being unreachable.
 
-### In progress: library view (Step 7.3b)
+### In progress: library view
 
 - **Profile header:** avatar, colour-coded status badge, "member since" date, and a link to the Steam profile. *(currently being built)*
 - **Stat cards:** total hours, game count, most played game, number of unplayed games, and the percentage of the library that's been played.
@@ -36,7 +36,7 @@ A MERN app for looking up Steam users and exploring their profile and game libra
 
 ### Planned
 
-- **Game details (Step 7.4):** a Steam store endpoint on the server and a details view for each game.
+- **Game details:** a Steam store endpoint on the server and a details view for each game.
 - **Achievements:** per-game achievement progress.
 - **Sign in with Steam:** Steam OpenID login using `passport-steam`.
 - **Deployment:** hosting the API in the same region as the database, and enabling `trust proxy` so rate limiting works behind the host's proxy.
@@ -65,8 +65,7 @@ steam_tracker/
 │   │   ├── types/            # Raw Steam response shapes
 │   │   └── utils/            # HttpError, plus mappers from Steam's shapes to ours
 │   ├── models/               # User and VanityName Mongoose models
-│   ├── middleware/           # Rate limiters, 404 handler, error handler
-│   └── docs/                 # Step-by-step guides written during development
+│   └── middleware/           # Rate limiters, 404 handler, error handler
 └── client/
     └── src/
         ├── pages/            # SearchPage, UserPage, NotFoundPage
