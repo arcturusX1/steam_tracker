@@ -38,7 +38,7 @@ The owner is learning by building this, and writes the code themselves.
 |---|---|
 | `STEAM_API_KEY` | Added to every Steam request by `steamGet`. **Never log axios errors whole**: their URL contains the key. |
 | `STEAM_API_URL` | `https://api.steampowered.com` |
-| `MONGODB_URI` | An Atlas `mongodb+srv` URI with the database name in the path |
+| `MONGODB_URI` | Dev (since 2026-10-11): local Docker, `mongodb://localhost:27017/steam_tracker`. The container is `steam-mongo` (`mongo:8`, volume `steam-mongo-data`, `--restart unless-stopped`). Atlas (`mongodb+srv`, database name in the path) is for deployment. |
 | `PORT` | |
 | `CLIENT_URL` | `http://localhost:5173`, used as the CORS origin. No trailing slash. |
 
@@ -158,17 +158,17 @@ server/
 - **Private game details** are cached as `games: null` with a fresh `gamesFetchedAt`. Errors (404, 502) are never cached.
 - **Games are sorted** most-played first **before saving**; the controller doesn't sort.
 - **Total playtime:** the controller sums `playtimeHours` and rounds to whole hours. There's no `playtimeMinutes` field.
-- **Database:** `steam_tracker`, set in `MONGODB_URI`. Test data: vanity entries for gabelogannewell, robinwalker, and arcturusx1, plus their `users` docs.
+- **Database:** `steam_tracker`, set in `MONGODB_URI`. The local Docker DB started empty on 2026-10-11 and refills from first lookups (the Atlas copy had vanity entries for gabelogannewell, robinwalker, and arcturusx1, plus their `users` docs).
 - **Test profiles:**
   - The owner's: `ArcturusX1` / `76561198290622030`, public, 202 games.
   - `gabelogannewell` and `robinwalker`: public profiles with **private** games, useful for 403 tests.
 
 ## Known gotchas
 
-- **Atlas IP access list:** the owner's ISP rotates public IPs across ranges (seen: `45.248.151.16`/`.29`, then `103.72.212.16`/`.29` on 2026-10-09). The access list has `45.248.151.0/24`, and needs `103.72.212.0/24` too. When the range changes again, the symptom is the same: `SSL alert number 80`.
+- **Atlas IP access list** (only matters when using Atlas): the owner's ISP rotates public IPs across ranges (seen: `45.248.151.16`/`.29`, then `103.72.212.16`/`.29` on 2026-10-09). The access list has `45.248.151.0/24`, and needs `103.72.212.0/24` too. When the range changes again, the symptom is the same: `SSL alert number 80`.
   - An Atlas rejection shows up as `MongooseServerSelectionError` / `SSL alert number 80`, not as an auth error.
   - `hostname -i` in WSL gives a local address, not the public IP.
-- **Large reads from Atlas are slow from the dev machine.** A 51 KB user document (202 games) takes 1.8–6.5 s to transfer, while the query itself takes 0 ms, a round trip 90 ms, and a small document about 100 ms.
+- **Large reads from Atlas are slow from the dev machine** (one reason dev moved to local Docker). A 51 KB user document (202 games) takes 1.8–6.5 s to transfer, while the query itself takes 0 ms, a round trip 90 ms, and a small document about 100 ms.
   - It isn't Mongoose: the raw driver behaves the same way. zlib compression only helps slightly.
   - The likely cause is the network route to the cluster's region, or free-tier throttling. Check the cluster's region before optimizing; it should mostly go away when the server is deployed in the same region as Atlas.
   - Cached reads still use 0 Steam calls.

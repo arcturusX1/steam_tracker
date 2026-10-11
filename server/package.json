@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --env-file=.env index.ts",
     "dev": "node --env-file=.env --watch index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "predev": "docker start steam-mongo",
+    "prestart": "docker start steam-mongo",
+    "db:stop": "docker stop steam-mongo"
   },
   "keywords": [],
   "type": "module",
@@ -29,4 +32,5 @@
     "@types/node": "^26.6.3",
     "typescript": "^7.0.2"
   }
+
 }

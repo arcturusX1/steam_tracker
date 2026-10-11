@@ -13,7 +13,7 @@ import { fetchUser, fetchUserGames, errorMessage } from "@/lib/api";
 import type { ApiState } from "@/hooks/useApiData";
 import type { UserGameResponse } from "@/types/api";
 import { WarningCircleIcon, LockIcon, UserCircleIcon } from "@phosphor-icons/react";
-
+import ProfileHeader from "@/components/ProfileHeader";
 
 
 interface UserLibraryProps{
@@ -72,8 +72,7 @@ export default function UserLibrary({input}:UserLibraryProps){
     return(
         <div className="flex flex-col gap-6">
             <div>
-                <h1 className="font-heading text-2xl font-semibold">{profile.data.displayName}</h1>
-                <p className="text-sm text-muted-foreground">{profile.data.steamId}</p>
+                <ProfileHeader profile={profile.data}/>
             </div>
             <GamesSection state={games}/>
         </div>
