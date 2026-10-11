@@ -134,6 +134,7 @@ server/
 | `ISteamUser/GetPlayerSummaries` | v2 | `steamids` param; an unknown ID gives an empty `players` array |
 | `IPlayerService/GetOwnedGames` | v1 | `include_appinfo=1`, `include_played_free_games=1` |
 
+- **`rtime_last_played` is only returned for the API key's owner** (ArcturusX1). For other accounts, GetOwnedGames omits it, along with the per-platform playtimes; `playtime_2weeks` is still sent. Verified 2026-10-11 against `76561199003894726` (49 games, 0 dates). So `lastPlayed: null` means "never played" only when `playtimeHours` is 0; otherwise it means "unknown".
 - Game icon URL: `https://media.steampowered.com/steamcommunity/public/images/apps/{appid}/{img_icon_url}.jpg`
 - Quota: about 100,000 calls per day per key, which is why the Step 6 cache exists.
 
@@ -147,7 +148,7 @@ server/
 | 4. Routes and controllers | Done |
 | 5. Rate limiting | Done |
 | 6. Caching in MongoDB | Done (tested 2026-10-03). Guide: `server/docs/step-6-caching-models.md` |
-| 7. React client | In progress. 7.1 setup and 7.2 routing and search page are done (`28e4fc0`). 7.3a fetching is done (`e66dd92`). **7.3b library UI is in progress** (Part 1, `ProfileHeader`); the guide is `server/docs/step-7.3b-library-ui.md`. Next: 7.4 store endpoint and game details view, then achievements. |
+| 7. React client | In progress. 7.1 setup and 7.2 routing and search page are done (`28e4fc0`). 7.3a fetching is done (`e66dd92`). 7.3b library UI is done (2026-10-11): `ProfileHeader`, `StatCards` (`lib/stats.ts`), and `GamesTable` (filter, sort by most played / recent / A–Z). The Last played column was dropped (see the Steam endpoints notes). Guide: `server/docs/step-7.3b-library-ui.md`. **Next: 7.4**, a store endpoint and game details view, then achievements. |
 | Later | Steam OpenID login (passport-steam), deployment (`trust proxy` for rate limiting behind a host's proxy) |
 
 ### How the cache works (Step 6)

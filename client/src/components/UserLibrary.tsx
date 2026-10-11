@@ -16,7 +16,7 @@ import { WarningCircleIcon, LockIcon, UserCircleIcon } from "@phosphor-icons/rea
 import ProfileHeader from "@/components/ProfileHeader";
 import StatCards from "@/components/StatCards";
 import { computeStats } from "@/lib/stats";
-
+import GamesTable from "@/components/GamesTable";
 
 interface UserLibraryProps{
     input: string;
@@ -117,6 +117,7 @@ function GamesSection({state}: GamesSectionProps){
     return(
         <div className="flex flex-col gap-6">
             <StatCards stats={stats}/>
+            <GamesTable games={state.data.games}/>
         </div>
     )
 }
