@@ -14,6 +14,8 @@ import type { ApiState } from "@/hooks/useApiData";
 import type { UserGameResponse } from "@/types/api";
 import { WarningCircleIcon, LockIcon, UserCircleIcon } from "@phosphor-icons/react";
 import ProfileHeader from "@/components/ProfileHeader";
+import StatCards from "@/components/StatCards";
+import { computeStats } from "@/lib/stats";
 
 
 interface UserLibraryProps{
@@ -110,9 +112,11 @@ function GamesSection({state}: GamesSectionProps){
         )
     }
 
+    const stats = computeStats(state.data)
+
     return(
-        <p className="text-muted-foreground">
-            {state.data.gameCount} games, {state.data.totalPlaytimeHours} hours played
-        </p>
+        <div className="flex flex-col gap-6">
+            <StatCards stats={stats}/>
+        </div>
     )
 }

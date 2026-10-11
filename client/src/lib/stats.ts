@@ -11,6 +11,8 @@ export interface LibraryStats{
 }
 
 export function computeStats(data: UserGameResponse): LibraryStats{
+    
+    //these values are for/from specific games only: access individual UserGame[] 
     const unplayedCount = data.games.filter((game)=>game.playtimeHours===0).length
     const playedPercent = data.gameCount === 0? 0 : Math.round((data.gameCount - unplayedCount) / data.gameCount * 100)
     const mostPlayed = data.games.length > 0? data.games[0] : null
