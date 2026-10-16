@@ -29,7 +29,7 @@ export default function ProfileHeader({profile}: ProfileHeaderProps){
         <div className="flex items-center gap-4">
             
             <Avatar className="size-16">
-                <AvatarImage src={profile.avatar} alt={`${profile.displayName}'s profile'`}/>
+                <AvatarImage src={profile.avatar} alt={`${profile.displayName}'s profile`}/>
                 <AvatarFallback>{profile.displayName.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
 
@@ -49,8 +49,8 @@ export default function ProfileHeader({profile}: ProfileHeaderProps){
                         href={profile.profileUrl}
                         target="_blank"
                         rel="nonreferrer"
-                        className="inline-flex items-center gap-1 underline-offset-4 hover:text-foreground hover:underline"/>
-                    Steam Profile
+                        className="inline-flex items-center gap-1 underline-offset-4 hover:text-foreground hover:underline">
+                    Steam Profile</a>
                     <ArrowSquareOutIcon className="size-3.5"/>
                 </p>
             </div>

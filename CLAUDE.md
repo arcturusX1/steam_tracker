@@ -21,7 +21,6 @@ The owner is learning by building this, and writes the code themselves.
 | `npm run typecheck` | `tsc --noEmit`. This is the only type checking; Node itself does not check types. |
 
 - `--watch` does not reload `.env`. Restart after changing environment variables.
-- `nodemon` is in the dependencies but unused.
 - The server runs on `PORT` (5000). The client dev server (`npm run dev` in `client/`) runs on 5173.
 
 ## TypeScript constraints (`server/tsconfig.json`)
@@ -80,7 +79,7 @@ server/
 │   ├── notFound.ts             # JSON 404 using req.originalUrl
 │   ├── errorHandler.ts         # 4-arg handler; hides messages on 500; headersSent → next(err)
 │   └── rateLimiter.ts          # apiLimiter (300/15min), steamLimiter (20/min); draft-8 headers; JSON message
-└── docs/                       # guides written for the owner: step-4, step-6, step-7.3a (client fetching), step-7.3b (library UI), ts-js-study-guide (their weak spots, ranked)
+└── docs/                       # guides written for the owner: step-4, step-6, step-7.3a (client fetching), step-7.3b (library UI), step-7.4 (game details), ci-stage-1 (GitHub Actions), client-flow (how the client works end to end), ts-js-study-guide (their weak spots, ranked)
 ```
 
 ### Middleware and route order in `index.ts` (order matters)

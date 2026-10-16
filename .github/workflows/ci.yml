@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push: #action
+    branches: 
+      - main # define which branch the action will trigger for
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true # cancels an in progress job if a new one is triggered
+
+jobs: #things that'll start on trigger
+  #server component jobs
+  server: # job id 
+    name: Server 
+    runs-on: ubuntu-latest #vm distro
+    timeout-minutes: 10 # kill job if exceeds time limit
+    
+    defaults:
+      run:
+        working-directory: server
+    
+    steps:
+      - uses: actions/checkout@v7 # downloads repo into github vm
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      
+      - name: Install
+        run: npm ci
+      
+      - name: Typecheck
+        run: npm run typecheck
+  
+  client:
+    name: Client
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: client
+    
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install 
+        run: npm ci
+      
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+
+
