@@ -19,9 +19,3 @@ export interface UserGame{
     lastPlayed: string|null;
 }
 
-export interface UserGameResponse{
-    steamId: string;
-    gameCount: number;
-    totalPlaytimeHours: number;
-    games: UserGame[]
-}
