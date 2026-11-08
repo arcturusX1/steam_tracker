@@ -3,6 +3,7 @@ import VanityName from "../models/VanityName.ts"
 import { parseIdOrVanity, lookupVanityName, getPlayerSummary, getOwnedGames } from "./steamService.ts"
 import type { UserProfile, UserGame } from "./utils/mappers.ts";
 import { toProfile, toGame } from "./utils/mappers.ts";
+import { isFresh } from "./utils/isFresh.ts";
 
 const PROFILE_MAX_AGE = 600000;
 const GAMES_MAX_AGE = 3600000;
@@ -71,11 +72,3 @@ export async function getOwnedGamesCached(steamId: string): Promise<UserGame[] |
     return games;
 }
 
-function isFresh(fetchedAt: Date | null | undefined, maxAge: number): boolean{
-    if(!fetchedAt){
-        return false;
-    }
-    const current = Date.now();
-    const age = current - fetchedAt.getTime();
-    return age < maxAge;
-}

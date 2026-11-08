@@ -5,6 +5,7 @@ import helmet from 'helmet';
 
 import healthRouter from './routes/healthRouter.ts';
 import userRouter from './routes/usersRouter.ts';
+import gamesRouter from './routes/gamesRouter.ts';
 
 import notFound from './middleware/notFound.ts';
 import errorHandler from './middleware/errorHandler.ts';
@@ -28,6 +29,7 @@ app.use(express.json())
 app.use("/api", healthRouter)
 app.use("/api", apiLimiter)
 app.use("/api/users", steamLimiter, userRouter)
+app.use("/api/games", steamLimiter, gamesRouter)
 
 //helpers
 app.use(notFound);

@@ -7,6 +7,8 @@ import type {
   PlayerSummariesResponse,
   OwnedGame,
   OwnedGamesResponse,
+  AppDetailsData,
+  AppDetailsResponse
 } from "./types/steamResponseTypes.ts";
 
 
@@ -14,6 +16,13 @@ const steamConnector = axios.create({
     baseURL: process.env.STEAM_API_URL,
     timeout: 10000
 });
+
+const STORE_BASE_URL = "https://store.steampowered.com/api"
+
+const storeConnector = axios.create({
+    baseURL: STORE_BASE_URL,
+    timeout: 10000
+})
 
 //<T> == Generic T, type changes depending on caller 
 // Record<string, string | number> describes an object with string keys
@@ -27,14 +36,19 @@ async function steamGet<T>(path: string, params: Record<string, string | number>
         });
         return res.data;
     }catch (err){
-        if (axios.isAxiosError(err)){
-            const status = err.response?.status;
-            console.error(`Steam error: ${path}`, status ?? err.code);
+        handleSteamError(err, path)
+    }
 
-            if (status ===429) throw new HttpError(429, "Steam rate limit reached, try later");
-            throw new HttpError(502, "Steam API request failed")
-        }throw err;
+}
 
+async function storeGet<T>(path: string, params: Record<string, string | number> = {}): Promise<T> { 
+    try{
+        const res = await storeConnector.get<T>(path,{
+            params: params
+        });
+        return res.data;
+    }catch (err){
+        handleSteamError(err, path)
     }
 
 }
@@ -95,3 +109,27 @@ export async function getOwnedGames(steamId: string): Promise<OwnedGame[] | null
     return data.response.games ?? null;
 }
 
+export async function getAppDetails(appId: number): Promise<AppDetailsData>{
+    const data = await storeGet<AppDetailsResponse | null>("/appdetails", {
+        appids: appId,
+        l: "english"
+    });
+    if (!data){
+        throw new HttpError(502, "Steam Store Error")
+    }
+    const entry = data[String(appId)]
+    if (!entry || !entry.success){
+        throw new HttpError(404, `No store page for app ${appId}`)
+    }
+    return entry.data
+}
+
+function handleSteamError(err: unknown, label: string): never{
+    if (axios.isAxiosError(err)){
+            const status = err.response?.status;
+            console.error(`Steam error: ${label}`, status ?? err.code);
+
+            if (status ===429) throw new HttpError(429, "Steam rate limit reached, try later");
+            throw new HttpError(502, "Steam API request failed")
+        }throw err;
+}
