@@ -1,4 +1,4 @@
-import type { UserProfile, UserGameResponse } from "@/types/api";
+import type { UserProfile, UserGameResponse, UserAchievementsResponse, GameDetails } from "@/types/api";
 const API_URL = import.meta.env.VITE_API_URL
 
 export class ApiError extends Error{
@@ -42,6 +42,14 @@ export async function fetchUser(input: string, signal: AbortSignal): Promise<Use
 
 export async function fetchUserGames(input: string, signal: AbortSignal): Promise<UserGameResponse>{
     return await apiGet<UserGameResponse>("/users/" + encodeURIComponent(input) + "/games", signal)
+}
+
+export async function fetchUserAchievements(input: string, signal: AbortSignal): Promise<UserAchievementsResponse>{
+    return await apiGet<UserAchievementsResponse>("/users/" + encodeURIComponent(input) + "/achievements", signal)
+}
+
+export async function fetchGameDetails(appId: string, signal: AbortSignal): Promise<GameDetails>{
+    return await apiGet<GameDetails>("/games/" + encodeURIComponent(appId), signal)
 }
 
 export function errorMessage(error: ApiError){

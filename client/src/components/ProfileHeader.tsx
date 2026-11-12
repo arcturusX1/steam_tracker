@@ -1,6 +1,8 @@
 import{ Avatar, AvatarImage, AvatarFallback} from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ArrowSquareOutIcon } from "@phosphor-icons/react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { ArrowSquareOutIcon, CalendarBlankIcon } from "@phosphor-icons/react"
 import { formatMonthYear } from "@/lib/dateFormat"
 import type { UserProfile } from "@/types/api"
 
@@ -10,7 +12,7 @@ function statusVariant(status: string): "default" | "secondary" | "outline"{
         case "looking to play":
         case "looking to trade":
             return "default"
-        
+
         case "away":
         case "busy":
         case "snooze":
@@ -26,34 +28,40 @@ interface ProfileHeaderProps{
 export default function ProfileHeader({profile}: ProfileHeaderProps){
     const memberSince = formatMonthYear(profile.createdAt)
     return (
-        <div className="flex items-center gap-4">
-            
-            <Avatar className="size-16">
-                <AvatarImage src={profile.avatar} alt={`${profile.displayName}'s profile`}/>
-                <AvatarFallback>{profile.displayName.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
+        <Card className="gap-0 py-0">
+            {/* decorative banner: the avatar below overlaps its bottom edge */}
+            <div className="h-24 bg-linear-to-r from-primary/50 via-chart-3/25 to-transparent sm:h-28"/>
 
-            <div className="flex min-w-0 flex-col gap-1">
-                <div className="flex min-w-0 items-center gap-2">
-                    <h1 className="truncate font-heading text-2xl font-semibold"> 
-                        {profile.displayName}
-                    </h1>
+            <CardContent className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-end">
+                <Avatar className="-mt-12 size-24 ring-4 ring-card">
+                    <AvatarImage src={profile.avatar} alt={`${profile.displayName}'s avatar`}/>
+                    <AvatarFallback className="text-2xl">{profile.displayName.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
 
-                    <Badge variant = {statusVariant(profile.status)}>{profile.status}</Badge>
-                    {!profile.isPublic && <Badge variant="outline">Private Profile</Badge>}
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <h1 className="truncate font-heading text-2xl font-semibold sm:text-3xl">
+                            {profile.displayName}
+                        </h1>
+                        <Badge variant={statusVariant(profile.status)} className="capitalize">{profile.status}</Badge>
+                        {!profile.isPublic && <Badge variant="outline">Private profile</Badge>}
+                    </div>
+
+                    {memberSince && (
+                        <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                            <CalendarBlankIcon className="size-4"/>
+                            Member since {memberSince}
+                        </p>
+                    )}
                 </div>
 
-                <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                    {memberSince && <span>Member since {memberSince}</span>}
-                    <a
-                        href={profile.profileUrl}
-                        target="_blank"
-                        rel="nonreferrer"
-                        className="inline-flex items-center gap-1 underline-offset-4 hover:text-foreground hover:underline">
-                    Steam Profile</a>
-                    <ArrowSquareOutIcon className="size-3.5"/>
-                </p>
-            </div>
-        </div>
+                <Button variant="outline" size="sm" asChild className="self-start sm:self-end">
+                    <a href={profile.profileUrl} target="_blank" rel="noopener noreferrer">
+                        Steam profile
+                        <ArrowSquareOutIcon data-icon="inline-end"/>
+                    </a>
+                </Button>
+            </CardContent>
+        </Card>
     )
 }

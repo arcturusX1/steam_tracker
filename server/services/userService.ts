@@ -1,12 +1,13 @@
 import User from "../models/User.ts"
 import VanityName from "../models/VanityName.ts"
-import { parseIdOrVanity, lookupVanityName, getPlayerSummary, getOwnedGames } from "./steamService.ts"
-import type { UserProfile, UserGame } from "./utils/mappers.ts";
-import { toProfile, toGame } from "./utils/mappers.ts";
+import { parseIdOrVanity, lookupVanityName, getPlayerSummary, getOwnedGames, getTopAchievements } from "./steamService.ts"
+import type { UserProfile, UserGame, AchievementCount } from "./utils/mappers.ts";
+import { toProfile, toGame, toAchievementCount } from "./utils/mappers.ts";
 import { isFresh } from "./utils/isFresh.ts";
 
 const PROFILE_MAX_AGE = 600000;
 const GAMES_MAX_AGE = 3600000;
+const TOP_GAMES_COUNT = 4;
 
 //input (steamId, vanity name, or profile URL) -> steamId. checks the vanity cache before calling steam
 export async function resolveSteamIdCached(input: string): Promise<string>{
@@ -72,3 +73,25 @@ export async function getOwnedGamesCached(steamId: string): Promise<UserGame[] |
     return games;
 }
 
+//achievement counts for the user's most played games. games must already be sorted most played first.
+//cached with its own timestamp, and refetched early if the top games have changed since
+export async function getTopAchievementsCached(steamId: string, games: UserGame[]): Promise<AchievementCount[]>{
+    const topAppIds = games.slice(0, TOP_GAMES_COUNT).map((game) => game.appId);
+    if (topAppIds.length === 0){
+        return [];
+    }
+
+    const cached = await User.findOne({steamId}).select("topAchievements topAchievementsFetchedAt").lean();
+    const cachedAppIds = cached?.topAchievements?.map((count) => count.appId) ?? [];
+    const sameGames = cachedAppIds.length === topAppIds.length && topAppIds.every((appId) => cachedAppIds.includes(appId));
+
+    if(cached?.topAchievements && sameGames && isFresh(cached.topAchievementsFetchedAt, GAMES_MAX_AGE)){
+        return cached.topAchievements;
+    }
+
+    //cache miss
+    const counts = (await getTopAchievements(steamId, topAppIds)).map(toAchievementCount);
+    await User.updateOne({steamId}, {$set: {topAchievements: counts, topAchievementsFetchedAt: new Date()}}, {upsert: true});
+
+    return counts;
+}

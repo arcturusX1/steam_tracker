@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { resolveSteamIdCached, getProfileCached, getOwnedGamesCached } from "../services/userService.ts"
+import { resolveSteamIdCached, getProfileCached, getOwnedGamesCached, getTopAchievementsCached } from "../services/userService.ts"
 import {toHours} from "../services/utils/mappers.ts"
 import { HttpError } from "../services/utils/HttpError.ts";
 
@@ -47,4 +47,22 @@ export async function getUserGames(req: Request<URLParams>, res: Response){
         games
     })
 
+}
+
+//achievement counts for the user's 4 most played games
+export async function getUserAchievements(req: Request<URLParams>, res: Response){
+    const input = paramsValidator(req.params.input);
+    const steamId = await resolveSteamIdCached(input);
+    const games = await getOwnedGamesCached(steamId);
+
+    if(!games){
+        throw new HttpError(403, `User profile is private`)
+    }
+
+    const achievements = await getTopAchievementsCached(steamId, games);
+
+    res.json({
+        steamId,
+        achievements
+    })
 }

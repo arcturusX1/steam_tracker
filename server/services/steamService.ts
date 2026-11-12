@@ -7,6 +7,8 @@ import type {
   PlayerSummariesResponse,
   OwnedGame,
   OwnedGamesResponse,
+  TopAchievementsGame,
+  TopAchievementsResponse,
   AppDetailsData,
   AppDetailsResponse
 } from "./types/steamResponseTypes.ts";
@@ -107,6 +109,26 @@ export async function getOwnedGames(steamId: string): Promise<OwnedGame[] | null
         include_played_free_games: 1,
     });
     return data.response.games ?? null;
+}
+
+//above any real game's achievement count, so steam lists every unlocked achievement
+const MAX_ACHIEVEMENTS = 10000;
+
+//achievement counts for several games in one call -> /IPlayerService/GetTopAchievementsForGames/v1/
+//steam wants the ids as appids[0], appids[1], ... so each one gets its own numbered param
+export async function getTopAchievements(steamId: string, appIds: number[]): Promise<TopAchievementsGame[]>{
+    const params: Record<string, string | number> = {
+        steamid: steamId,
+        language: "english",
+        max_achievements: MAX_ACHIEVEMENTS,
+    };
+    appIds.forEach((appId, index) => {
+        params[`appids[${index}]`] = appId;
+    });
+
+    const data = await steamGet<TopAchievementsResponse>("/IPlayerService/GetTopAchievementsForGames/v1/", params);
+    //private game details give response: {}
+    return data.response.games ?? [];
 }
 
 export async function getAppDetails(appId: number): Promise<AppDetailsData>{

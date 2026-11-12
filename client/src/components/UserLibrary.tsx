@@ -9,14 +9,18 @@ import { Empty,
     EmptyTitle,
     EmptyMedia } from "@/components/ui/empty";
 import { useApiData } from "@/hooks/useApiData";
-import { fetchUser, fetchUserGames, errorMessage } from "@/lib/api";
+import { fetchUser, fetchUserGames, fetchUserAchievements, errorMessage } from "@/lib/api";
 import type { ApiState } from "@/hooks/useApiData";
-import type { UserGameResponse } from "@/types/api";
+import type { UserGameResponse, UserAchievementsResponse } from "@/types/api";
 import { WarningCircleIcon, LockIcon, UserCircleIcon } from "@phosphor-icons/react";
 import ProfileHeader from "@/components/ProfileHeader";
 import StatCards from "@/components/StatCards";
 import { computeStats } from "@/lib/stats";
 import GamesTable from "@/components/GamesTable";
+import TopGames from "@/components/TopGames";
+
+//must match TOP_GAMES_COUNT in the server's userService, which picks the games the achievement counts are for
+const TOP_GAMES_COUNT = 4;
 
 interface UserLibraryProps{
     input: string;
@@ -25,18 +29,12 @@ interface UserLibraryProps{
 export default function UserLibrary({input}:UserLibraryProps){
     const profile = useApiData(input, fetchUser)
     const games = useApiData(input, fetchUserGames)
+    const achievements = useApiData(input, fetchUserAchievements)
     
     //loading return
     if(profile.status === "loading"){
-    return(
-        <div className="flex items-center gap-4">
-            <Skeleton className="size-16 rounded-full"/>
-            <div className="flex flex-col gap-2">
-                <Skeleton className="h-6 w-48"/>
-                <Skeleton className="h-4 w-32"/>
-            </div>
-        </div>
-        )
+        //roughly the shape of the profile card, so the page doesn't jump when it loads
+        return <Skeleton className="h-52 w-full rounded-xl sm:h-44"/>
     }
 
     //404 return
@@ -72,22 +70,30 @@ export default function UserLibrary({input}:UserLibraryProps){
     
     //success
     return(
-        <div className="flex flex-col gap-6">
-            <div>
-                <ProfileHeader profile={profile.data}/>
-            </div>
-            <GamesSection state={games}/>
+        <div className="flex flex-col gap-8">
+            <ProfileHeader profile={profile.data}/>
+            <GamesSection state={games} achievements={achievements}/>
         </div>
     )
 }
 
 interface GamesSectionProps{
     state: ApiState<UserGameResponse>;
+    achievements: ApiState<UserAchievementsResponse>;
 }
 
-function GamesSection({state}: GamesSectionProps){
+function GamesSection({state, achievements}: GamesSectionProps){
     if(state.status === "loading"){
-        return <Skeleton className="h-32 w-full"/>
+        return(
+            <div className="flex flex-col gap-8">
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    {[0, 1, 2, 3].map((index)=><Skeleton key={index} className="h-24 rounded-xl"/>)}
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {[0, 1, 2, 3].map((index)=><Skeleton key={index} className="h-72 rounded-xl"/>)}
+                </div>
+            </div>
+        )
     }
 
     if(state.status === "error"){
@@ -112,12 +118,33 @@ function GamesSection({state}: GamesSectionProps){
         )
     }
 
+    const {games, steamId} = state.data
     const stats = computeStats(state.data)
+    //games arrive sorted most played first, so the first few are the highlights
+    const topGames = games.slice(0, TOP_GAMES_COUNT)
+    const otherGames = games.slice(TOP_GAMES_COUNT)
 
     return(
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
             <StatCards stats={stats}/>
-            <GamesTable games={state.data.games}/>
+
+            {games.length === 0 && (
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyTitle>No games yet</EmptyTitle>
+                        <EmptyDescription>This library is empty</EmptyDescription>
+                    </EmptyHeader>
+                </Empty>
+            )}
+
+            {topGames.length > 0 && <TopGames games={topGames} steamId={steamId} achievements={achievements}/>}
+
+            {otherGames.length > 0 && (
+                <section className="flex flex-col gap-3">
+                    <h2 className="font-heading text-lg font-semibold">Rest of the library</h2>
+                    <GamesTable games={otherGames} steamId={steamId}/>
+                </section>
+            )}
         </div>
     )
 }

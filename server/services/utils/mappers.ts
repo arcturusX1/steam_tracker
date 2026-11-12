@@ -1,6 +1,7 @@
-import type { PlayerSummary, OwnedGame, AppDetailsData } from "../types/steamResponseTypes.ts";
+import type { PlayerSummary, OwnedGame, AppDetailsData, TopAchievementsGame } from "../types/steamResponseTypes.ts";
 
 const ICON_BASE_URL = "https://media.steampowered.com/steamcommunity/public/images/apps";
+const HEADER_BASE_URL = "https://cdn.akamai.steamstatic.com/steam/apps";
 const userStatus = ["offline", "online", "busy", "away", "snooze", "looking to trade", "looking to play"];
 
 //time conversion helpers
@@ -27,7 +28,15 @@ export interface UserGame{
     playtimeHours: number;
     recentHours: number;
     iconUrl: string | null;
+    headerUrl: string;
     lastPlayed: string | null;
+}
+
+//unlocked/total achievements for one game. total is 0 for games without achievements
+export interface AchievementCount{
+  appId: number;
+  unlocked: number;
+  total: number;
 }
 
 export interface GameDetails{
@@ -70,7 +79,16 @@ export function toGame(game: OwnedGame):UserGame {
     playtimeHours: toHours(game.playtime_forever),
     recentHours: toHours(game.playtime_2weeks ?? 0),
     iconUrl: game.img_icon_url ? `${ICON_BASE_URL}/${game.appid}/${game.img_icon_url}.jpg` : null,
+    headerUrl: `${HEADER_BASE_URL}/${game.appid}/header.jpg`,
     lastPlayed: toIsoDate(game.rtime_last_played),
+  };
+}
+
+export function toAchievementCount(game: TopAchievementsGame): AchievementCount{
+  return {
+    appId: game.appid,
+    unlocked: game.achievements?.length ?? 0,
+    total: game.total_achievements ?? 0,
   };
 }
 

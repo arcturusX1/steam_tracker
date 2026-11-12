@@ -89,3 +89,17 @@ export interface AppAchievements{
 }
 
 export type AppDetailsResponse = Record<string, AppDetailsEntry | undefined>
+
+//one game from GetTopAchievementsForGames. total_achievements is missing for games without achievements.
+//achievements lists the ones the user has unlocked; only its length is used, so the items stay unknown
+export interface TopAchievementsGame{
+  appid: number;
+  total_achievements?: number;
+  achievements?: unknown[];
+}
+
+export interface TopAchievementsResponse{
+  response: {
+    games?: TopAchievementsGame[];
+  };
+}

@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import type { UserProfile, UserGame } from "../services/utils/mappers.ts";
+import type { UserProfile, UserGame, AchievementCount } from "../services/utils/mappers.ts";
 
 //gets shaped data from mappers.ts
 export interface IUser{
@@ -8,6 +8,8 @@ export interface IUser{
     profileFetchedAt?: Date;
     games: UserGame[] | null;
     gamesFetchedAt: Date | null;
+    topAchievements: AchievementCount[] | null;
+    topAchievementsFetchedAt: Date | null;
 }
 
 const profileSchema = new Schema<UserProfile>(
@@ -30,7 +32,17 @@ const gameSchema = new Schema<UserGame>(
     playtimeHours: { type: Number, required: true },
     recentHours: { type: Number, default: 0 },
     iconUrl: { type: String, default: null },
+    headerUrl: { type: String, default: null },
     lastPlayed: { type: String, default: null },
+  },
+  { _id: false }
+);
+
+const achievementCountSchema = new Schema<AchievementCount>(
+  {
+    appId: { type: Number, required: true },
+    unlocked: { type: Number, required: true },
+    total: { type: Number, required: true },
   },
   { _id: false }
 );
@@ -42,6 +54,8 @@ const userSchema = new Schema<IUser>(
     profileFetchedAt: { type: Date },
     games: { type: [gameSchema], default: null },
     gamesFetchedAt: { type: Date, default: null },
+    topAchievements: { type: [achievementCountSchema], default: null },
+    topAchievementsFetchedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
