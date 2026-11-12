@@ -29,21 +29,21 @@ function StatCard({label, value, hint}: StatCardProps){
 export default function StatCards({stats}: StatCardsProps){
     return(
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <StatCard label="Total Playtime" 
-            value={formatHours(stats.totalHours)} 
-            hint={stats.recentHours > 0? `Recent playtime: ${formatHours(stats.recentHours)}`: undefined}/>
-            
+            <StatCard label="Total Playtime"
+            value={formatHours(stats.totalHours)}/>
+
             <StatCard label="Games Owned"
             value={stats.gameCount.toLocaleString()}
             />
 
-            <StatCard label="Most Played"
-            //mostPlayed is null for an empty library: 
-            // ?. gives undefined instead of crashing on .name, 
-            // ?? swaps undefined for "-"
-            value={stats.mostPlayed?.name ?? "-"}
-            hint={stats.mostPlayed? formatHours(stats.mostPlayed.playtimeHours): undefined}/>
+            {/* the most played game now has its own section (TopGames), so this slot shows how much of the library has been played */}
+            <StatCard label="Library Played"
+            value={`${stats.playedPercent}%`}
+            hint={stats.unplayedCount > 0 ? `${stats.unplayedCount.toLocaleString()} never played` : undefined}/>
 
+            <StatCard label="Last 2 Weeks"
+            value={formatHours(stats.recentHours)}
+            hint={stats.recentGames.length > 0 ? `Across ${stats.recentGames.length} ${stats.recentGames.length === 1 ? "game" : "games"}` : "Nothing played recently"}/>
 
         </div>
     )
